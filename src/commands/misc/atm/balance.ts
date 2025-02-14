@@ -1,6 +1,8 @@
 import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
-import User from '../../models/User'
-import { formatNumberToReadableString } from '../../utils/utils'
+import {
+  checkUserRegistration,
+  formatNumberToReadableString,
+} from '../../../utils/utils'
 import { MessageFlags } from 'discord.js'
 
 export const data: CommandData = {
@@ -16,11 +18,12 @@ export async function run({ interaction }: SlashCommandProps) {
   try {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
-    const user = await User.findOne({ userId: interaction.user.id })
+    const user = await checkUserRegistration(interaction.user.id)
 
     if (!user) {
-      await User.create({ userId: interaction.user.id })
-      return interaction.editReply(`Tvůj zůstatek je $**0**.`)
+      return interaction.editReply(
+        'Nemáš účet. Pro vytvoření účtu napiš `/register`.'
+      )
     }
 
     return interaction.editReply(

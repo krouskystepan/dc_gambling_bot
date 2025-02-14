@@ -5,6 +5,7 @@ import {
   CacheType,
   MessageFlags,
 } from 'discord.js'
+import User from '../models/User'
 
 export const connectToDatabase = async () => {
   try {
@@ -17,9 +18,14 @@ export const connectToDatabase = async () => {
   }
 }
 
+type ChannelType =
+  | 'casinoChannelIds'
+  | 'adminChannelIds'
+  | 'predictionChannelIds'
+
 export const checkChannelConfiguration = async (
   interaction: ChatInputCommandInteraction<CacheType>,
-  channelType: 'casinoChannelIds' | 'adminChannelIds',
+  channelType: ChannelType,
   messages: {
     notSet: string
     notAllowed: string
@@ -65,14 +71,18 @@ export const checkChannelConfiguration = async (
   }
 }
 
+export const checkUserRegistration = async (userId: string) => {
+  return await User.findOne({ userId })
+}
+
 export const formatNumberToReadableString = (number: number): string => {
   const absNumber = Math.abs(number)
 
   let formatted: string
-  if (absNumber >= 1_000_000_00) {
+  if (absNumber >= 1_000_000_000) {
     formatted =
-      (absNumber / 1_000_000_00).toFixed(
-        absNumber % 1_000_000_00 === 0 ? 0 : 2
+      (absNumber / 1_000_000_000).toFixed(
+        absNumber % 1_000_000_000 === 0 ? 0 : 2
       ) + 'B'
   } else if (absNumber >= 1_000_000) {
     formatted =

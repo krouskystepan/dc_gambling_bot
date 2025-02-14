@@ -1,12 +1,12 @@
 import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
 import { ApplicationCommandOptionType, MessageFlags } from 'discord.js'
-import User from '../../../models/User'
 import { createBetEmbed } from '../../../utils/createEmbed'
 import { spinSlot, calculateWinnings } from '../../../utils/slotsHelpers'
 import {
   checkChannelConfiguration,
   parseReadableStringToNumber,
   formatNumberToReadableString,
+  checkUserRegistration,
 } from '../../../utils/utils'
 
 export const data: CommandData = {
@@ -35,6 +35,14 @@ export const options: CommandOptions = {
 
 export async function run({ interaction }: SlashCommandProps) {
   try {
+    const user = await checkUserRegistration(interaction.user.id)
+
+    if (!user) {
+      return interaction.editReply(
+        'Nemáš účet. Pro vytvoření účtu napiš `/register`.'
+      )
+    }
+
     const configReply = await checkChannelConfiguration(
       interaction,
       'casinoChannelIds',
@@ -77,8 +85,6 @@ export async function run({ interaction }: SlashCommandProps) {
         flags: MessageFlags.Ephemeral,
       })
     }
-
-    const user = await User.findOne({ userId: interaction.user.id })
 
     if (!user) {
       return interaction.reply({

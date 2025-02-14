@@ -13,7 +13,10 @@ import {
 import Prediction from '../../models/Prediction'
 import { createBetEmbed } from '../../utils/createEmbed'
 import User from '../../models/User'
-import { formatNumberToReadableString } from '../../utils/utils'
+import {
+  checkChannelConfiguration,
+  formatNumberToReadableString,
+} from '../../utils/utils'
 
 export const data: CommandData = {
   name: 'prediction',
@@ -115,6 +118,18 @@ export const options: CommandOptions = {
 
 export async function run({ interaction }: SlashCommandProps) {
   try {
+    const configReply = await checkChannelConfiguration(
+      interaction,
+      'predictionChannelIds',
+      {
+        notSet:
+          'Tento server nebyl ještě nastaven pro používání sázkových příkazů. Nastav ho pomocí `/setup-prediction`.',
+        notAllowed: `Tento kanál není nastaven pro používání sázkových příkazů. Zkuste jeden z těchto kanálů:`,
+      }
+    )
+
+    if (configReply) return
+
     const options = interaction.options as CommandInteractionOptionResolver
 
     const subcommand = options.getSubcommand()

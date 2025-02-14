@@ -138,12 +138,10 @@ export async function run({ interaction }: SlashCommandProps) {
       }
 
       return interaction.reply(
-        `Přidal jsi **$${formatNumberToReadableString(
-          parsedAmount
-        )}** uživateli <@${
+        `Přidal jsi **$${amount}** uživateli <@${
           user.id
         }> \nAktuální stav účtu: **$${formatNumberToReadableString(
-          userDocument?.balance!
+          userDocument ? userDocument.balance : parsedAmount
         )}**.`
       )
     }

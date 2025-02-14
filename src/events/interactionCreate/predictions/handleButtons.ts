@@ -1,11 +1,10 @@
 import {
   ActionRowBuilder,
-  Interaction,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  ModalSubmitInteraction,
   MessageFlags,
+  Interaction,
 } from 'discord.js'
 import Prediction from '../../../models/Prediction'
 import { parseReadableStringToNumber } from '../../../utils/utils'
@@ -50,53 +49,57 @@ export default async (interaction: Interaction) => {
 
     await interaction.showModal(modal)
 
-    const filter = (i: ModalSubmitInteraction) =>
-      i.customId === `prediction-${predictionId}-${choiceName}`
+    const modalInteraction = await interaction
+      .awaitModalSubmit({
+        filter: (i) =>
+          i.customId === `prediction-${predictionId}-${choiceName}`,
+        time: 60000,
+      })
+      .catch(() => null)
 
-    interaction.client.once('interactionCreate', async (modalInteraction) => {
-      if (!modalInteraction.isModalSubmit()) return
-      if (!filter(modalInteraction)) return
+    if (!modalInteraction) return
 
-      const betAmount = modalInteraction.fields
-        .getTextInputValue(`bet-${predictionId}-input`)
-        .toUpperCase()
+    const betAmount = modalInteraction.fields
+      .getTextInputValue(`bet-${predictionId}-input`)
+      .toUpperCase()
 
-      const user = await User.findOne({ userId: modalInteraction.user.id })
+    const parsedBetAmount = parseReadableStringToNumber(betAmount)
 
-      if (!user) return
-
-      const parsedBetAmount = parseReadableStringToNumber(betAmount)
-
-      if (isNaN(parsedBetAmount)) {
-        return await modalInteraction.reply({
-          content: `❌ Neplatná částka.`,
-          flags: MessageFlags.Ephemeral,
-        })
-      }
-
-      if (user.balance < parseReadableStringToNumber(betAmount)) {
-        return await modalInteraction.reply({
-          content: `❌ Nemáš dostatek peněz na vsazení $**${betAmount}**`,
-          flags: MessageFlags.Ephemeral,
-        })
-      }
-
-      user.balance -= parseReadableStringToNumber(betAmount)
-      await user.save()
-
-      targetPrediction.choices
-        .filter((choice) => choice.choiceName === choiceName)[0]
-        .bets.push({
-          userId: user.userId,
-          amount: parseReadableStringToNumber(betAmount),
-        })
-
-      await targetPrediction.save()
-
-      await modalInteraction.reply({
-        content: `✅ Vsadil jsi $**${betAmount}** na **${choiceName}**`,
+    if (isNaN(parsedBetAmount)) {
+      return await modalInteraction.reply({
+        content: `❌ Neplatná částka.`,
         flags: MessageFlags.Ephemeral,
       })
+    }
+
+    // Bezpečná aktualizace uživatelského zůstatku
+    const updatedUser = await User.findOneAndUpdate(
+      { userId: modalInteraction.user.id, balance: { $gte: parsedBetAmount } },
+      { $inc: { balance: -parsedBetAmount } },
+      { new: true }
+    )
+
+    if (!updatedUser) {
+      return await modalInteraction.reply({
+        content: `❌ Nemáš dostatek peněz na vsazení $**${betAmount}**`,
+        flags: MessageFlags.Ephemeral,
+      })
+    }
+
+    const targetChoice = targetPrediction.choices.find(
+      (choice) => choice.choiceName === choiceName
+    )
+    if (targetChoice) {
+      targetChoice.bets.push({
+        userId: updatedUser.userId,
+        amount: parsedBetAmount,
+      })
+      await targetPrediction.save()
+    }
+
+    await modalInteraction.reply({
+      content: `✅ Vsadil jsi $**${betAmount}** na **${choiceName}**`,
+      flags: MessageFlags.Ephemeral,
     })
   } catch (error) {
     console.error('Error in handlePrediction.ts', error)

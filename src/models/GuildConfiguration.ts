@@ -2,9 +2,13 @@ import { Schema, model, Document } from 'mongoose'
 
 export type GuildConfiguration = Document & {
   guildId: string
+  atmChannelIds: {
+    actions: string
+    logs: string
+  }
   adminChannelIds: string[]
   casinoChannelIds: string[]
-  predictionChannelIds: [string]
+  predictionChannelIds: string[]
 }
 
 const guildConfigurationSchema = new Schema<GuildConfiguration>({
@@ -12,6 +16,16 @@ const guildConfigurationSchema = new Schema<GuildConfiguration>({
     type: String,
     required: true,
     unique: true,
+  },
+  atmChannelIds: {
+    actions: {
+      type: String,
+      default: '',
+    },
+    logs: {
+      type: String,
+      default: '',
+    },
   },
   adminChannelIds: {
     type: [String],
