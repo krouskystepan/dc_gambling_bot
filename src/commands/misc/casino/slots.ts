@@ -157,7 +157,11 @@ export async function run({ interaction }: SlashCommandProps) {
             ? '🎰 **Smůla...** ❌'
             : '🎰 **Nic moc...** 👀',
           isWin ? 'Green' : isLoss ? 'Red' : 'Yellow',
-          `🕹 **Výsledky spinů:**\n${results.join('\n')}\n\n` +
+
+          `**💵 Celková vsazená částka: $${formatNumberToReadableString(
+            totalBet
+          )}**\n\n` +
+            `🕹 **Výsledky spinů:**\n${results.join('\n')}\n\n` +
             `💰 **Celkový výsledek:** ${
               isWin ? '🟢' : isLoss ? '🔴' : '🟡'
             } **$${formatNumberToReadableString(totalWinnings)}**\n`
