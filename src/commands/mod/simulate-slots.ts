@@ -25,7 +25,7 @@ export const data: CommandData = {
       required: true,
     },
   ],
-  contexts: [0],
+  // contexts: [0],
 }
 
 export const options: CommandOptions = {
