@@ -80,8 +80,6 @@ export async function run({ interaction, client }: SlashCommandProps) {
       guildConfiguration.atmChannelIds.logs
     ) as TextChannel
 
-    console.log(interaction.user)
-
     const member = interaction.member as GuildMember | null
     const displayName =
       member?.displayName ||
