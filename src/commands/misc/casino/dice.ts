@@ -8,7 +8,6 @@ import {
   formatNumberToReadableString,
   checkUserRegistration,
 } from '../../../utils/utils'
-import { BET_CHOICES } from '../../../utils/slotsHelpers'
 
 export const data: CommandData = {
   name: 'dice',
@@ -19,10 +18,6 @@ export const data: CommandData = {
       description: 'Vlož sázku (předvolenou nebo např. 2k, 4.5k).',
       type: ApplicationCommandOptionType.String,
       required: true,
-      choices: BET_CHOICES.map((choice) => ({
-        name: choice.label,
-        value: choice.value.toString(),
-      })),
     },
     {
       name: 'side',
@@ -64,12 +59,25 @@ export async function run({ interaction }: SlashCommandProps) {
 
     if (configReply) return
 
-    const bet = parseReadableStringToNumber(
-      interaction.options.getString('bet', true)
-    )
     const side = interaction.options.getInteger('side', true)
 
-    if (bet < 1) {
+    const betAmount = interaction.options.getString('bet', true)
+    const parsedBetAmount = parseReadableStringToNumber(betAmount)
+
+    if (isNaN(parsedBetAmount)) {
+      return interaction.reply({
+        embeds: [
+          createBetEmbed(
+            '❌ Neplatná částka',
+            'Red',
+            'Sázka musí být reálné číslo.'
+          ),
+        ],
+        flags: MessageFlags.Ephemeral,
+      })
+    }
+
+    if (parsedBetAmount < 1) {
       return interaction.reply({
         embeds: [
           createBetEmbed(
@@ -108,7 +116,7 @@ export async function run({ interaction }: SlashCommandProps) {
       })
     }
 
-    if (user.balance < bet) {
+    if (user.balance < parsedBetAmount) {
       return interaction.reply({
         embeds: [
           createBetEmbed(
@@ -124,7 +132,7 @@ export async function run({ interaction }: SlashCommandProps) {
     const dice = Math.floor(Math.random() * 6) + 1
 
     if (dice === side) {
-      const winnings = Math.floor(bet * DICE_WIN_MULTIPLIER)
+      const winnings = Math.floor(parsedBetAmount * DICE_WIN_MULTIPLIER)
       user.balance += winnings
       await user.save()
 
@@ -140,7 +148,7 @@ export async function run({ interaction }: SlashCommandProps) {
         ],
       })
     } else {
-      user.balance -= bet
+      user.balance -= parsedBetAmount
       await user.save()
 
       return interaction.reply({
@@ -148,9 +156,7 @@ export async function run({ interaction }: SlashCommandProps) {
           createBetEmbed(
             '😢 Prohra',
             'Red',
-            `🎲 Padlo **${dice}**.\nZtratil jsi **$${formatNumberToReadableString(
-              bet
-            )}**. Zkus to znovu!`
+            `🎲 Padlo **${dice}**.\nZtratil jsi **$${betAmount}**. Zkus to znovu!`
           ),
         ],
       })

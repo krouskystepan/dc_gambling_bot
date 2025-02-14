@@ -1,11 +1,7 @@
 import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
 import { ApplicationCommandOptionType, MessageFlags } from 'discord.js'
 import { createBetEmbed } from '../../../utils/createEmbed'
-import {
-  spinSlot,
-  calculateWinnings,
-  BET_CHOICES,
-} from '../../../utils/slotsHelpers'
+import { spinSlot, calculateWinnings } from '../../../utils/slotsHelpers'
 import {
   checkChannelConfiguration,
   parseReadableStringToNumber,
@@ -22,10 +18,6 @@ export const data: CommandData = {
       description: 'Vlož sázku (předvolenou nebo např. 2k, 4.5k).',
       type: ApplicationCommandOptionType.String,
       required: true,
-      choices: BET_CHOICES.map((choice) => ({
-        name: choice.label,
-        value: choice.value.toString(),
-      })),
     },
     {
       name: 'spins',
@@ -63,12 +55,25 @@ export async function run({ interaction }: SlashCommandProps) {
 
     if (configReply) return
 
-    const bet = parseReadableStringToNumber(
-      interaction.options.getString('bet', true)
-    )
     const spins = interaction.options.getInteger('spins') || 1
 
-    if (bet < 1) {
+    const betAmount = interaction.options.getString('bet', true)
+    const parsedBetAmount = parseReadableStringToNumber(betAmount)
+
+    if (isNaN(parsedBetAmount)) {
+      return interaction.reply({
+        embeds: [
+          createBetEmbed(
+            '❌ Neplatná částka',
+            'Red',
+            'Sázka musí být reálné číslo.'
+          ),
+        ],
+        flags: MessageFlags.Ephemeral,
+      })
+    }
+
+    if (parsedBetAmount < 1) {
       return interaction.reply({
         embeds: [
           createBetEmbed(
@@ -107,7 +112,7 @@ export async function run({ interaction }: SlashCommandProps) {
       })
     }
 
-    const totalBet = bet * spins
+    const totalBet = parsedBetAmount * spins
     if (user.balance < totalBet) {
       return interaction.reply({
         embeds: [
@@ -128,18 +133,18 @@ export async function run({ interaction }: SlashCommandProps) {
 
     for (let i = 0; i < spins; i++) {
       const resultString = spinSlot()
-      const winnings = calculateWinnings(resultString, bet)
+      const winnings = calculateWinnings(resultString, parsedBetAmount)
       const isWin = winnings > 0
 
       results.push(
         `**${resultString}** | ${isWin ? '🎉' : '❌'} | ${
           isWin
             ? `**+$${formatNumberToReadableString(winnings)}**`
-            : `**-$${formatNumberToReadableString(bet)}**`
+            : `**-$${betAmount}**`
         }`
       )
 
-      totalWinnings += winnings - bet
+      totalWinnings += winnings - parsedBetAmount
     }
 
     user.balance += totalWinnings

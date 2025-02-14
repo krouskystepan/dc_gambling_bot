@@ -49,10 +49,14 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
+    const account = interaction.options.getString('account', true)
+
     const amount = interaction.options.getString('amount', true)
     const parsedAmout = parseReadableStringToNumber(amount)
 
-    const account = interaction.options.getString('account', true)
+    if (isNaN(parsedAmout)) {
+      return interaction.editReply('Částka musí být reálné číslo.')
+    }
 
     if (parsedAmout <= 0) {
       return interaction.editReply('Částka musí být kladné číslo.')
