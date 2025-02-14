@@ -23,9 +23,9 @@ export const SLOT_PROBABILITIES = {
   '🍋🍋🍋': 0.033, // Snížená pravděpodobnost pro střední výhry
   '🍊🍊🍊': 0.012, // Mírně nižší pravděpodobnost pro středně vzácné výhry
   '🍉🍉🍉': 0.011, // Snížená pravděpodobnost pro vzácné výhry
-  '⭐⭐⭐': 0.009, // Mírně vzácná kombinace
-  '🔔🔔🔔': 0.007, // Velmi vzácná kombinace
-  '7️⃣7️⃣7️⃣': 0.001, // Nejvzácnější kombinace
+  '⭐⭐⭐': 0.0009, // Mírně vzácná kombinace
+  '🔔🔔🔔': 0.0007, // Velmi vzácná kombinace
+  '7️⃣7️⃣7️⃣': 0.0001, // Nejvzácnější kombinace
 }
 
 export const ALL_SYMBOLS = ['🍒', '🍋', '🍊', '🍉', '⭐', '🔔', '7️⃣']
