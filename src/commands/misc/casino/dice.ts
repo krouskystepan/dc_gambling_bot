@@ -8,6 +8,7 @@ import {
   formatNumberToReadableString,
   checkUserRegistration,
 } from '../../../utils/utils'
+import { BET_CHOICES } from '../../../utils/slotsHelpers'
 
 export const data: CommandData = {
   name: 'dice',
@@ -15,9 +16,13 @@ export const data: CommandData = {
   options: [
     {
       name: 'bet',
-      description: 'Vlož sázku (Můžeš psát i 2k, 4.5k).',
+      description: 'Vlož sázku (předvolenou nebo např. 2k, 4.5k).',
       type: ApplicationCommandOptionType.String,
       required: true,
+      choices: BET_CHOICES.map((choice) => ({
+        name: choice.label,
+        value: choice.value.toString(),
+      })),
     },
     {
       name: 'side',
