@@ -12,7 +12,6 @@ import {
   TextChannel,
 } from 'discord.js'
 import GuildConfiguration from '../../../models/GuildConfiguration'
-import User from '../../../models/User'
 
 export const data: CommandData = {
   name: 'withdraw',
@@ -43,9 +42,10 @@ export async function run({ interaction, client }: SlashCommandProps) {
     const user = await checkUserRegistration(interaction.user.id)
 
     if (!user) {
-      return interaction.editReply(
-        'Nemáš účet. Pro vytvoření účtu napiš `/register`.'
-      )
+      return interaction.reply({
+        content: 'Nemáš účet. Pro vytvoření účtu napiš `/register`.',
+        flags: MessageFlags.Ephemeral,
+      })
     }
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })

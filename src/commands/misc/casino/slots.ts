@@ -38,9 +38,10 @@ export async function run({ interaction }: SlashCommandProps) {
     const user = await checkUserRegistration(interaction.user.id)
 
     if (!user) {
-      return interaction.editReply(
-        'Nemáš účet. Pro vytvoření účtu napiš `/register`.'
-      )
+      return interaction.reply({
+        content: 'Nemáš účet. Pro vytvoření účtu napiš `/register`.',
+        flags: MessageFlags.Ephemeral,
+      })
     }
 
     const configReply = await checkChannelConfiguration(
