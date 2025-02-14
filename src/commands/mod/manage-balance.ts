@@ -131,11 +131,13 @@ export async function run({ interaction }: SlashCommandProps) {
 
       const userDocument = await User.findOne({ userId: user.id })
       if (!userDocument) {
-        await User.create({ userId: user.id, balance: parsedAmount })
-      } else {
-        userDocument.balance += parsedAmount
-        await userDocument.save()
+        return interaction.reply(
+          'Tento uživatel se ještě nezaregistroval. Ať použije `/register`.'
+        )
       }
+
+      userDocument.balance += parsedAmount
+      await userDocument.save()
 
       return interaction.reply(
         `Přidal jsi **$${amount}** uživateli <@${
@@ -163,18 +165,20 @@ export async function run({ interaction }: SlashCommandProps) {
 
       const userDocument = await User.findOne({ userId: user.id })
 
+      if (!userDocument) {
+        return interaction.reply(
+          'Tento uživatel se ještě nezaregistroval. Ať použije `/register`.'
+        )
+      }
+
       if (userDocument?.balance! < parsedAmount) {
         return interaction.reply(
           `Uživatel <@${user.id}> nemá dostatečný zůstatek na účtu.`
         )
       }
 
-      if (!userDocument) {
-        await User.create({ userId: user.id, balance: -parsedAmount })
-      } else {
-        userDocument.balance -= parsedAmount
-        await userDocument.save()
-      }
+      userDocument.balance -= parsedAmount
+      await userDocument.save()
 
       return interaction.reply(
         `Odebral jsi **$${formatNumberToReadableString(
@@ -190,13 +194,16 @@ export async function run({ interaction }: SlashCommandProps) {
     if (subcommand === 'reset') {
       const user = interaction.options.getUser('user', true)
 
+      if (user.bot) {
+        return interaction.reply('Nemůžeš resetovat zůstatek botovi.')
+      }
+
       const userDocument = await User.findOne({ userId: user.id })
 
       if (!userDocument) {
-        return interaction.reply({
-          content: 'Tohoto uživatele neznáme.',
-          flags: MessageFlags.Ephemeral,
-        })
+        return interaction.reply(
+          'Tento uživatel se ještě nezaregistroval. Ať použije `/register`.'
+        )
       }
 
       userDocument.balance = 0
@@ -211,13 +218,16 @@ export async function run({ interaction }: SlashCommandProps) {
     if (subcommand === 'check') {
       const user = interaction.options.getUser('user', true)
 
+      if (user.bot) {
+        return interaction.reply('Bot nemá zůstatek.')
+      }
+
       const userDocument = await User.findOne({ userId: user.id })
 
       if (!userDocument) {
-        return interaction.reply({
-          content: 'Tohoto uživatele neznáme.',
-          flags: MessageFlags.Ephemeral,
-        })
+        return interaction.reply(
+          'Tento uživatel se ještě nezaregistroval. Ať použije `/register`.'
+        )
       }
 
       return interaction.reply(
