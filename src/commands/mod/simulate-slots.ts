@@ -29,6 +29,8 @@ export const data: CommandData = {
 }
 
 export const options: CommandOptions = {
+  userPermissions: ['Administrator'],
+  botPermissions: ['Administrator'],
   deleted: false,
 }
 
