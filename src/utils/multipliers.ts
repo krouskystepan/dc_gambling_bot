@@ -2,11 +2,13 @@
 // Hráč vyhraje 5× svou sázku, pokud uhodne správné číslo (1–6).
 // Očekávaný návrat je nižší než 1, což zajišťuje zisk pro kasino.
 export const DICE_WIN_MULTIPLIER = 5
+export const DICE_MAX_BET = 3000
 
 // Násobitel výhry pro hru s mincí.
 // Hráč vyhraje 1,9× svou sázku, pokud uhodne správnou stranu (panna/orel).
 // Tento násobitel je mírně pod férovými 2×, což dává kasinu výhodu.
 export const COINFLIP_WIN_MULTIPLIER = 1.9
+export const COINFLIP_MAX_BET = 3000
 
 export const SLOT_MULTIPLIERS = {
   '🍒🍒🍒': 3, // Trochu zvýšený multiplikátor pro časté výhry
@@ -17,7 +19,6 @@ export const SLOT_MULTIPLIERS = {
   '🔔🔔🔔': 20, // Ještě vyšší multiplikátor pro vzácnější výhry
   '7️⃣7️⃣7️⃣': 100, // Nejvyšší multiplikátor pro extrémně vzácné výhry
 }
-
 export const SLOT_PROBABILITIES = {
   '🍒🍒🍒': 0.05, // Vysoká pravděpodobnost pro časté výhry
   '🍋🍋🍋': 0.033, // Snížená pravděpodobnost pro střední výhry
@@ -27,5 +28,5 @@ export const SLOT_PROBABILITIES = {
   '🔔🔔🔔': 0.007, // Velmi vzácná kombinace
   '7️⃣7️⃣7️⃣': 0.0008, // Nejvzácnější kombinace
 }
-
 export const ALL_SYMBOLS = ['🍒', '🍋', '🍊', '🍉', '⭐', '🔔', '7️⃣']
+export const SLOT_MAX_BET = 1000

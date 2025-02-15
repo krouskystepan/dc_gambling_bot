@@ -1,7 +1,7 @@
 import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
 import { ApplicationCommandOptionType, MessageFlags } from 'discord.js'
 import { createBetEmbed } from '../../../utils/createEmbed'
-import { DICE_WIN_MULTIPLIER } from '../../../utils/multiplayers'
+import { DICE_MAX_BET, DICE_WIN_MULTIPLIER } from '../../../utils/multipliers'
 import {
   checkChannelConfiguration,
   parseReadableStringToNumber,
@@ -91,6 +91,19 @@ export async function run({ interaction }: SlashCommandProps) {
       })
     }
 
+    if (parsedBetAmount > DICE_MAX_BET) {
+      return interaction.reply({
+        embeds: [
+          createBetEmbed(
+            '❌ Neplatná sázka',
+            'Red',
+            `Maximální sázka je $${formatNumberToReadableString(DICE_MAX_BET)}.`
+          ),
+        ],
+        flags: MessageFlags.Ephemeral,
+      })
+    }
+
     if (side < 1 || side > 6) {
       return interaction.reply({
         embeds: [
@@ -123,7 +136,9 @@ export async function run({ interaction }: SlashCommandProps) {
           createBetEmbed(
             '❌ Nedostatek peněz',
             'Red',
-            'Nemáš dostatek peněz na sázku.'
+            `Nemáš dostatek peněz na sázku.\nTvůj aktuální zůstatek je **${formatNumberToReadableString(
+              user.balance
+            )}**.`
           ),
         ],
         flags: MessageFlags.Ephemeral,

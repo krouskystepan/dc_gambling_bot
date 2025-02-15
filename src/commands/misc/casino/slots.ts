@@ -8,6 +8,7 @@ import {
   formatNumberToReadableString,
   checkUserRegistration,
 } from '../../../utils/utils'
+import { SLOT_MAX_BET } from '../../../utils/multipliers'
 
 export const data: CommandData = {
   name: 'slots',
@@ -87,6 +88,19 @@ export async function run({ interaction }: SlashCommandProps) {
       })
     }
 
+    if (parsedBetAmount > SLOT_MAX_BET) {
+      return interaction.reply({
+        embeds: [
+          createBetEmbed(
+            '❌ Neplatná sázka',
+            'Red',
+            `Maximální sázka je $${formatNumberToReadableString(SLOT_MAX_BET)}.`
+          ),
+        ],
+        flags: MessageFlags.Ephemeral,
+      })
+    }
+
     if (spins < 1 || spins > 20) {
       return interaction.reply({
         embeds: [
@@ -94,19 +108,6 @@ export async function run({ interaction }: SlashCommandProps) {
             '❌ Neplatný počet spinů',
             'Red',
             'Počet otoček musí být mezi 1 a 20.'
-          ),
-        ],
-        flags: MessageFlags.Ephemeral,
-      })
-    }
-
-    if (!user) {
-      return interaction.reply({
-        embeds: [
-          createBetEmbed(
-            '❌ Uživatel nenalezen',
-            'Red',
-            'Uživatel nebyl nalezen.'
           ),
         ],
         flags: MessageFlags.Ephemeral,
@@ -122,7 +123,9 @@ export async function run({ interaction }: SlashCommandProps) {
             'Red',
             `Nemáš dostatek peněz na ${spins} spinů (potřebuješ **$${formatNumberToReadableString(
               totalBet
-            )}**).`
+            )}**).\nTvůj aktuální zůstatek je **${formatNumberToReadableString(
+              user.balance
+            )}**.`
           ),
         ],
         flags: MessageFlags.Ephemeral,

@@ -5,7 +5,7 @@ import {
   formatNumberToReadableString,
   parseReadableStringToNumber,
 } from '../../utils/utils'
-import { SLOT_MULTIPLIERS } from '../../utils/multiplayers'
+import { SLOT_MULTIPLIERS } from '../../utils/multipliers'
 import { calculateRTP, spinSlot } from '../../utils/slotsHelpers'
 
 export const data: CommandData = {

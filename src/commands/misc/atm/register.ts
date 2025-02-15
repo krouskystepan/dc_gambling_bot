@@ -1,8 +1,5 @@
 import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
-import {
-  checkUserRegistration,
-  formatNumberToReadableString,
-} from '../../../utils/utils'
+import { checkUserRegistration } from '../../../utils/utils'
 import {
   EmbedBuilder,
   GuildMember,

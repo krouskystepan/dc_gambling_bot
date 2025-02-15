@@ -1,7 +1,7 @@
 import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
 import {
-  checkChannelConfiguration,
   checkUserRegistration,
+  formatNumberToReadableString,
   parseReadableStringToNumber,
 } from '../../../utils/utils'
 import {
@@ -54,6 +54,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
     const amount = interaction.options.getString('amount', true)
     const parsedAmout = parseReadableStringToNumber(amount)
+    const readableAmount = formatNumberToReadableString(parsedAmout)
 
     if (isNaN(parsedAmout)) {
       return interaction.editReply('Částka musí být reálné číslo.')
@@ -98,7 +99,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
             .setTitle(`Vklad od ${displayName} (${interaction.user.username})`)
             .setColor('Green')
             .setDescription(
-              `Uživatel vložil **$${amount}** z účtu **${account}**.`
+              `Uživatel vložil **$${readableAmount}** z účtu **${account}**.`
             ),
         ],
       })
@@ -108,7 +109,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
       .catch(console.error)
 
     return interaction.editReply(
-      `Vložil jsi **$${amount}**. Počkej na zpracování.`
+      `Vložil jsi **$${readableAmount}**. Počkej na zpracování.`
     )
   } catch (error) {
     console.error('Error running the command:', error)

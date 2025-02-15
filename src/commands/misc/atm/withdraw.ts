@@ -1,7 +1,7 @@
 import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
 import {
-  checkChannelConfiguration,
   checkUserRegistration,
+  formatNumberToReadableString,
   parseReadableStringToNumber,
 } from '../../../utils/utils'
 import {
@@ -54,6 +54,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
     const amount = interaction.options.getString('amount', true)
     const parsedAmout = parseReadableStringToNumber(amount)
+    const readableAmount = formatNumberToReadableString(parsedAmout)
 
     if (isNaN(parsedAmout)) {
       return interaction.editReply('Částka musí být reálné číslo.')
@@ -82,8 +83,16 @@ export async function run({ interaction, client }: SlashCommandProps) {
     }
 
     if (user.balance < parsedAmout) {
-      return interaction.editReply('Nemáš dostatek peněz na účtu k vybrání.')
+      return interaction.editReply(
+        `Nemáš dostatek peněz na účtu k vybrání.\nTvůj aktuální zůstatek je **${formatNumberToReadableString(
+          user.balance
+        )}**.`
+      )
     }
+
+    user.balance -= parsedAmout
+
+    await user.save()
 
     const logChannel = client.channels.cache.get(
       guildConfiguration.atmChannelIds.logs
@@ -102,7 +111,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
             .setTitle(`Výběr od ${displayName} (${interaction.user.username})`)
             .setColor('Red')
             .setDescription(
-              `Uživatel vybral **$${amount}** na účet **${account}**.`
+              `Uživatel vybral **$${readableAmount}** na účet **${account}**.`
             ),
         ],
       })
@@ -112,7 +121,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
       .catch(console.error)
 
     return interaction.editReply(
-      `Vybral jsi **$${amount}**. Počkej na zpracování.`
+      `Vybral jsi **$${readableAmount}**. Počkej na zpracování.`
     )
   } catch (error) {
     console.error('Error running the command:', error)

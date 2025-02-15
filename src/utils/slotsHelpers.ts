@@ -2,7 +2,7 @@ import {
   SLOT_PROBABILITIES,
   SLOT_MULTIPLIERS,
   ALL_SYMBOLS,
-} from './multiplayers'
+} from './multipliers'
 
 export const spinSlot = (): string => {
   const randomValue = Math.random()
