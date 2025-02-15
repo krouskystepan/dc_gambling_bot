@@ -84,7 +84,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
     if (user.balance < parsedAmout) {
       return interaction.editReply(
-        `Nemáš dostatek peněz na účtu k vybrání.\nTvůj aktuální zůstatek je **${formatNumberToReadableString(
+        `Nemáš dostatek peněz na účtu k vybrání.\nTvůj aktuální zůstatek je **$${formatNumberToReadableString(
           user.balance
         )}**.`
       )

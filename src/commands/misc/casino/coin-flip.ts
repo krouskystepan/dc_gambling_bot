@@ -128,7 +128,7 @@ export async function run({ interaction }: SlashCommandProps) {
           createBetEmbed(
             '❌ Nedostatek peněz',
             'Red',
-            `Nemáš dostatek peněz na sázku.\nTvůj aktuální zůstatek je **${formatNumberToReadableString(
+            `Nemáš dostatek peněz na sázku.\nTvůj aktuální zůstatek je **$${formatNumberToReadableString(
               user.balance
             )}**.`
           ),

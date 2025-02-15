@@ -123,7 +123,7 @@ export async function run({ interaction }: SlashCommandProps) {
             'Red',
             `Nemáš dostatek peněz na ${spins} spinů (potřebuješ **$${formatNumberToReadableString(
               totalBet
-            )}**).\nTvůj aktuální zůstatek je **${formatNumberToReadableString(
+            )}**).\nTvůj aktuální zůstatek je **$${formatNumberToReadableString(
               user.balance
             )}**.`
           ),

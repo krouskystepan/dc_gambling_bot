@@ -5,7 +5,7 @@ import {
   formatNumberToReadableString,
   parseReadableStringToNumber,
 } from '../../utils/utils'
-import { SLOT_MULTIPLIERS } from '../../utils/multipliers'
+import { SLOT_MULTIPLIERS, SYMBOL_WEIGHTS } from '../../utils/multipliers'
 import { calculateRTP, spinSlot } from '../../utils/slotsHelpers'
 
 export const data: CommandData = {
@@ -25,13 +25,14 @@ export const data: CommandData = {
       required: true,
     },
   ],
-  // contexts: [0],
+  contexts: [0],
 }
 
 export const options: CommandOptions = {
   userPermissions: ['Administrator'],
   botPermissions: ['Administrator'],
   deleted: false,
+  devOnly: true,
 }
 
 export async function run({ interaction }: SlashCommandProps) {
@@ -44,12 +45,6 @@ export async function run({ interaction }: SlashCommandProps) {
     const spins = parseReadableStringToNumber(
       interaction.options.getString('spins', true)
     )
-
-    if (spins > 10_000) {
-      return await interaction.editReply({
-        content: 'Maximální počet spinů je 10k.',
-      })
-    }
 
     const bet = parseReadableStringToNumber(
       interaction.options.getString('bet', true)
@@ -74,7 +69,7 @@ export async function run({ interaction }: SlashCommandProps) {
 
     const profitOrLoss = totalWinnings - totalBet
     const profitOrLossPercentage = (profitOrLoss / totalBet) * 100
-    const rtp = calculateRTP()
+    const rtp = calculateRTP(spins)
 
     const embed = createBetEmbed(
       `🎰 Simulace Slotů - ${formatNumberToReadableString(spins)} spinů`,
@@ -84,6 +79,15 @@ export async function run({ interaction }: SlashCommandProps) {
         `Profit/Ztráta: **$${formatNumberToReadableString(profitOrLoss)}**\n` +
         `Procento profit/ztráta: **${profitOrLossPercentage.toFixed(2)}%**\n` +
         `📊 RTP: **${rtp.toFixed(2)}%**\n\n` +
+        `Váha symbolů a násobiče symbolů:\n` +
+        Object.entries(SYMBOL_WEIGHTS)
+          .map(([symbol, weight]) => {
+            const multiplier =
+              SLOT_MULTIPLIERS[`${symbol}${symbol}${symbol}`] || 'N/A'
+            return `${symbol}: Váha = ${weight}, Násobič = ${multiplier}x`
+          })
+          .join('\n') +
+        '\n\n' +
         `Všechny spiny trvaly: **${((endTime - startTime) / 1000).toFixed(
           2
         )}s**`
