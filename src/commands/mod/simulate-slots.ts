@@ -46,6 +46,12 @@ export async function run({ interaction }: SlashCommandProps) {
       interaction.options.getString('spins', true)
     )
 
+    if (spins > 1_000_000) {
+      return await interaction.editReply({
+        content: 'Maximální počet spinů je 1 000 000.',
+      })
+    }
+
     const bet = parseReadableStringToNumber(
       interaction.options.getString('bet', true)
     )

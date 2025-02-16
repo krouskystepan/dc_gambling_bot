@@ -26,6 +26,12 @@ export const data: CommandData = {
       type: ApplicationCommandOptionType.Integer,
       required: false,
     },
+    {
+      name: 'show-balance',
+      description: 'Zobrazí aktuální zůstatek (POZOR VIDÍ VŠICHNI)!',
+      type: ApplicationCommandOptionType.Boolean,
+      required: false,
+    },
   ],
   contexts: [0],
 }
@@ -61,6 +67,8 @@ export async function run({ interaction }: SlashCommandProps) {
 
     const betAmount = interaction.options.getString('bet', true)
     const parsedBetAmount = parseReadableStringToNumber(betAmount)
+
+    const showBalance = interaction.options.getBoolean('show-balance')
 
     if (isNaN(parsedBetAmount)) {
       return interaction.reply({
@@ -166,14 +174,18 @@ export async function run({ interaction }: SlashCommandProps) {
             ? '🎰 **Smůla...** ❌'
             : '🎰 **Nic moc...** 👀',
           isWin ? 'Green' : isLoss ? 'Red' : 'Yellow',
-
-          `**💵 Celková vsazená částka: $${formatNumberToReadableString(
+          `💵 Celková vsazená částka: **$${formatNumberToReadableString(
             totalBet
           )}**\n\n` +
             `🕹 **Výsledky spinů:**\n${results.join('\n')}\n\n` +
-            `💰 **Celkový výsledek:** ${
+            `💰 Celkový výsledek: ${
               isWin ? '🟢' : isLoss ? '🔴' : '🟡'
-            } **$${formatNumberToReadableString(totalWinnings)}**\n`
+            } **$${formatNumberToReadableString(totalWinnings)}**\n` +
+            (showBalance
+              ? `🏦 Aktuální zůstatek: **$${formatNumberToReadableString(
+                  user.balance
+                )}**`
+              : '')
         ),
       ],
     })

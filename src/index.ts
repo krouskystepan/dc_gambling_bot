@@ -22,7 +22,7 @@ async function startApp(client: Client) {
     eventsPath: path.join(__dirname, 'events'),
     bulkRegister: true,
     devGuildIds: ['1298805664654561340'],
-    devUserIds: ['563799503056928768'],
+    devUserIds: ['287563706173358080', '563799503056928768'],
   })
 
   await client.login(process.env.TOKEN)

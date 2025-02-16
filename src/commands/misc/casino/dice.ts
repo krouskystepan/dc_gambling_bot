@@ -29,6 +29,12 @@ export const data: CommandData = {
         value: i + 1,
       })),
     },
+    {
+      name: 'show-balance',
+      description: 'Zobrazí aktuální zůstatek (POZOR VIDÍ VŠICHNI)!',
+      type: ApplicationCommandOptionType.Boolean,
+      required: false,
+    },
   ],
   contexts: [0],
 }
@@ -64,6 +70,8 @@ export async function run({ interaction }: SlashCommandProps) {
 
     const betAmount = interaction.options.getString('bet', true)
     const parsedBetAmount = parseReadableStringToNumber(betAmount)
+
+    const showBalance = interaction.options.getBoolean('show-balance')
 
     if (isNaN(parsedBetAmount)) {
       return interaction.reply({
@@ -157,9 +165,15 @@ export async function run({ interaction }: SlashCommandProps) {
           createBetEmbed(
             '🎉 Výhra!',
             'Green',
-            `🎲 Padlo **${dice}**!\nVyhrál jsi **$${formatNumberToReadableString(
-              winnings
-            )}**! 💰`
+            `🎲 Padlo **${dice}**!\n` +
+              `💰 Vyhrál jsi **$${formatNumberToReadableString(
+                winnings
+              )}**!\n` +
+              (showBalance
+                ? `🏦 Zůstatek: **$${formatNumberToReadableString(
+                    user.balance
+                  )}**`
+                : '')
           ),
         ],
       })
@@ -172,7 +186,13 @@ export async function run({ interaction }: SlashCommandProps) {
           createBetEmbed(
             '😢 Prohra',
             'Red',
-            `🎲 Padlo **${dice}**.\nZtratil jsi **$${betAmount}**. Zkus to znovu!`
+            `🎲 Padlo **${dice}**!\n` +
+              `❌ Prohrál jsi **$${betAmount}**. Zkus to znovu!\n` +
+              (showBalance
+                ? `🏦 Aktuální zůstatek: **$${formatNumberToReadableString(
+                    user.balance
+                  )}**`
+                : '')
           ),
         ],
       })

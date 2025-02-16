@@ -32,6 +32,12 @@ export const data: CommandData = {
         { name: 'Orel (Tails)', value: 'tails' },
       ],
     },
+    {
+      name: 'show-balance',
+      description: 'Zobrazí aktuální zůstatek (POZOR VIDÍ VŠICHNI)!',
+      type: ApplicationCommandOptionType.Boolean,
+      required: false,
+    },
   ],
   contexts: [0],
 }
@@ -67,6 +73,8 @@ export async function run({ interaction }: SlashCommandProps) {
 
     const betAmount = interaction.options.getString('bet', true)
     const parsedBetAmount = parseReadableStringToNumber(betAmount)
+
+    const showBalance = interaction.options.getBoolean('show-balance')
 
     if (isNaN(parsedBetAmount)) {
       return interaction.reply({
@@ -157,11 +165,19 @@ export async function run({ interaction }: SlashCommandProps) {
         createBetEmbed(
           win ? '🎉 Výhra!' : '😢 Prohra',
           color,
-          `🎲 Padlo: **${resultText}**\n\n${win ? '🎉 Výhra!' : '😔 Prohra.'} ${
-            win
-              ? `Získal jsi **$${formatNumberToReadableString(winnings)}**!`
-              : `Ztratil jsi **$${betAmount}**.`
-          }`
+          `🎲 Padlo: **${resultText}**\n\n` +
+            `${
+              win
+                ? `🎉 Vyhrál jsi **$${formatNumberToReadableString(
+                    winnings
+                  )}**!\n`
+                : `❌ Prohrál jsi **$${betAmount}**!\n`
+            }` +
+            (showBalance
+              ? `🏦 Aktuální zůstatek: **$${formatNumberToReadableString(
+                  user.balance
+                )}**`
+              : '')
         ),
       ],
     })
