@@ -96,7 +96,7 @@ export const options: CommandOptions = {
   deleted: false,
 }
 
-export async function run({ interaction }: SlashCommandProps) {
+export async function run({ interaction, client }: SlashCommandProps) {
   try {
     const configReply = await checkChannelConfiguration(
       interaction,
@@ -240,14 +240,29 @@ export async function run({ interaction }: SlashCommandProps) {
     if (subcommand === 'list') {
       const users = await User.find()
 
-      const usersString = users
-        .map(
-          (user) =>
-            `<@${user.userId}>: **$${formatNumberToReadableString(
-              user.balance
-            )}**`
-        )
-        .join('\n')
+      const guild = client.guilds.cache.get(interaction.guildId!)
+      if (!guild) throw new Error('Guild not found')
+
+      const usersString = await Promise.all(
+        users.map(async (user) => {
+          const member = await guild.members
+            .fetch(user.userId)
+            .catch(() => null)
+          console.log(member)
+
+          return member
+            ? `${
+                member.nickname ||
+                member.user.globalName ||
+                member.user.username
+              } (${member.user.username}): **$${formatNumberToReadableString(
+                user.balance
+              )}**`
+            : `**Unknown User (${
+                user.userId
+              })**: **$${formatNumberToReadableString(user.balance)}**`
+        })
+      ).then((lines) => lines.join('\n'))
 
       return interaction.reply(`Zůstatek všech uživatelů:\n${usersString}`)
     }
