@@ -14,7 +14,7 @@ export const data: CommandData = {
   options: [
     {
       name: 'spins',
-      description: 'Počet spinů, které chceš simulovat (max. 10k).',
+      description: 'Počet spinů, které chceš simulovat.',
       type: ApplicationCommandOptionType.String,
       required: true,
     },
@@ -31,8 +31,26 @@ export const data: CommandData = {
       required: false,
     },
     {
-      name: 'wins-losses',
+      name: 'wins-losses-count',
       description: 'Zobrazí počet výher a proher.',
+      type: ApplicationCommandOptionType.Boolean,
+      required: false,
+    },
+    {
+      name: 'win-losses-series',
+      description: 'Zobrazí nejdelší výherní a proherní sérii.',
+      type: ApplicationCommandOptionType.Boolean,
+      required: false,
+    },
+    {
+      name: 'multipliers',
+      description: 'Zobrazí multiplikátory.',
+      type: ApplicationCommandOptionType.Boolean,
+      required: false,
+    },
+    {
+      name: 'weights',
+      description: 'Zobrazí váhy symbolů.',
       type: ApplicationCommandOptionType.Boolean,
       required: false,
     },
@@ -56,13 +74,18 @@ export async function run({ interaction }: SlashCommandProps) {
     let losses = 0
     let winCounts: Record<string, number> = {}
 
+    let currentWinningStreak = 0
+    let biggestWinningStreak = 0
+    let currentLosingStreak = 0
+    let biggestLosingStreak = 0
+
     const spins = parseReadableStringToNumber(
       interaction.options.getString('spins', true)
     )
 
     if (spins > 10_000_000) {
       return await interaction.editReply({
-        content: 'Maximální počet spinů je 1 000 000.',
+        content: 'Maximální počet spinů je 10M.',
       })
     }
 
@@ -70,8 +93,11 @@ export async function run({ interaction }: SlashCommandProps) {
       interaction.options.getString('bet', true)
     )
 
-    const details = interaction.options.getBoolean('details', false)
-    const winsLosses = interaction.options.getBoolean('wins-losses', false)
+    const details = interaction.options.getBoolean('details')
+    const winsLosses = interaction.options.getBoolean('wins-losses-count')
+    const winLossesSeries = interaction.options.getBoolean('win-losses-series')
+    const multipliers = interaction.options.getBoolean('multipliers')
+    const weights = interaction.options.getBoolean('weights')
 
     const startTime = performance.now()
     for (let i = 0; i < spins; i++) {
@@ -83,8 +109,20 @@ export async function run({ interaction }: SlashCommandProps) {
         winnings = bet * SLOT_MULTIPLIERS[resultString]
         wins++
         winCounts[resultString] = (winCounts[resultString] || 0) + 1
+
+        currentLosingStreak = 0
+        currentWinningStreak++
+        if (currentWinningStreak > biggestWinningStreak) {
+          biggestWinningStreak = currentWinningStreak
+        }
       } else {
         losses++
+
+        currentWinningStreak = 0
+        currentLosingStreak++
+        if (currentLosingStreak > biggestLosingStreak) {
+          biggestLosingStreak = currentLosingStreak
+        }
       }
 
       totalWinnings += winnings
@@ -95,9 +133,26 @@ export async function run({ interaction }: SlashCommandProps) {
     const profitOrLossPercentage = (profitOrLoss / totalBet) * 100
     const rtp = calculateRTP(spins)
 
+    const winLossesDetails = `🎉 Výhry: **${wins}**\n❌ Prohry: **${losses}**`
+
+    const winLossesSeriesDetails =
+      `🔥 Nejdelší výherní série: **${biggestWinningStreak}**\n` +
+      `💀 Nejdelší proherní série: **${biggestLosingStreak}**`
+
     const winDetails = Object.entries(winCounts)
-      .map(([combo, count]) => `${combo}: **${count}**x`)
+      .sort((a, b) => b[1] - a[1])
+      .map(([symbol, count]) => `${symbol}: **${count}**x`)
       .join('\n')
+
+    const multipliersDetails = Object.entries(SLOT_MULTIPLIERS)
+      .map(([symbol, multiplier]) => `${symbol}: **${multiplier}**x`)
+      .join('\n')
+
+    const symbolWeightsDetails = Object.entries(SYMBOL_WEIGHTS)
+      .map(([symbol, weight]) => `${symbol}: **${weight}**`)
+      .join('\n')
+
+    const totalTime = ((endTime - startTime) / 1000).toFixed(2)
 
     const embed = createBetEmbed(
       `🎰 Simulace Slotů - ${formatNumberToReadableString(spins)} spinů`,
@@ -107,13 +162,12 @@ export async function run({ interaction }: SlashCommandProps) {
         `Profit/Ztráta: **$${formatNumberToReadableString(profitOrLoss)}**\n` +
         `Procento profit/ztráta: **${profitOrLossPercentage.toFixed(2)}%**\n` +
         `📊 RTP: **${rtp.toFixed(2)}%**\n\n` +
-        (winsLosses
-          ? `🎉 Výhry: **${wins}**\n❌ Prohry: **${losses}**\n\n`
-          : '') +
+        (winsLosses ? `${winLossesDetails}\n\n` : '') +
+        (winLossesSeries ? `${winLossesSeriesDetails}\n\n` : '') +
         (details ? `Detail výher:\n${winDetails || 'Žádné výhry'}\n\n` : '') +
-        `Všechny spiny trvaly: **${((endTime - startTime) / 1000).toFixed(
-          2
-        )}s**`
+        (multipliers ? `Multiplikátory:\n${multipliersDetails}\n\n` : '') +
+        (weights ? `Váhy symbolů:\n${symbolWeightsDetails}\n\n` : '') +
+        `Všechny spiny trvaly: **${totalTime}s**`
     )
 
     await interaction.editReply({
