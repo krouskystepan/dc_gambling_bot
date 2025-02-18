@@ -250,7 +250,6 @@ export async function run({ interaction, client }: SlashCommandProps) {
           const member = await guild.members
             .fetch(user.userId)
             .catch(() => null)
-          console.log(member)
 
           return member
             ? `${
@@ -266,7 +265,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
         })
       ).then((lines) => lines.join('\n'))
 
-      return interaction.editReply(`Zůstatek všech uživatelů:\n${usersString}`) // Místo reply() použij editReply()
+      return interaction.editReply(`Zůstatek všech uživatelů:\n${usersString}`)
     }
 
     return interaction.reply('Příkaz nebyl nalezen.')
