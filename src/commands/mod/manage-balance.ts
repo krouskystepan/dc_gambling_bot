@@ -238,6 +238,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
     }
 
     if (subcommand === 'list') {
+      await interaction.deferReply()
+
       const users = await User.find()
 
       const guild = client.guilds.cache.get(interaction.guildId!)
@@ -264,7 +266,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
         })
       ).then((lines) => lines.join('\n'))
 
-      return interaction.reply(`Zůstatek všech uživatelů:\n${usersString}`)
+      return interaction.editReply(`Zůstatek všech uživatelů:\n${usersString}`) // Místo reply() použij editReply()
     }
 
     return interaction.reply('Příkaz nebyl nalezen.')
