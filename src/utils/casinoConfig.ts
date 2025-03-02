@@ -17,7 +17,6 @@ export const SLOT_MULTIPLIERS = {
   '🔔🔔🔔': 50,
   '7️⃣7️⃣7️⃣': 100,
 }
-
 export const SYMBOL_WEIGHTS = {
   '🍒': 35,
   '🍋': 25,
@@ -25,9 +24,8 @@ export const SYMBOL_WEIGHTS = {
   '🔔': 4,
   '7️⃣': 2,
 }
-
 export const WEIGHTED_SYMBOLS = Object.entries(SYMBOL_WEIGHTS).flatMap(
   ([symbol, weight]) => Array(weight).fill(symbol)
 )
-
 export const SLOT_MAX_BET = 1000
+// export const BLACKJACK_MAX_BET = 3000

@@ -1,4 +1,4 @@
-import { SLOT_MULTIPLIERS, WEIGHTED_SYMBOLS } from './multipliers'
+import { SLOT_MULTIPLIERS, WEIGHTED_SYMBOLS } from './casinoConfig'
 
 export function spinSlot() {
   return (

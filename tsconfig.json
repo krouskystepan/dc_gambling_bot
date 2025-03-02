@@ -9,6 +9,6 @@
     "resolveJsonModule": true,
     "outDir": "dist"
   },
-  "include": ["src", "temp/register-commands.ts"],
+  "include": ["src", "temp/register-commands.ts", "temp/blackjack.ts"],
   "exclude": ["node_modules"]
 }

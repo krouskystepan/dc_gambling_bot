@@ -1,6 +1,7 @@
 import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
 import { checkUserRegistration } from '../../../utils/utils'
 import {
+  ApplicationCommandOptionType,
   EmbedBuilder,
   GuildMember,
   MessageFlags,
@@ -10,8 +11,16 @@ import User from '../../../models/User'
 import GuildConfiguration from '../../../models/GuildConfiguration'
 
 export const data: CommandData = {
-  name: 'register',
-  description: 'Zaregistruj se do systému.',
+  name: 'force-register',
+  description: 'Registruj uživatele.',
+  options: [
+    {
+      name: 'user',
+      description: 'Uživatele, kterého chceš odregistrovat.',
+      type: ApplicationCommandOptionType.User,
+      required: true,
+    },
+  ],
 }
 
 export const options: CommandOptions = {
@@ -22,59 +31,47 @@ export async function run({ interaction, client }: SlashCommandProps) {
   try {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
-    const user = await checkUserRegistration(interaction.user.id)
-
-    if (user) {
-      return interaction.editReply('Už jsi zaregistrován.')
-    }
-
     const guildConfiguration = await GuildConfiguration.findOne({
       guildId: interaction.guildId,
     })
 
     if (!guildConfiguration?.atmChannelIds.logs) {
-      return interaction.editReply('ATM ještě není nastaven. Počkejte prosím.')
-    }
-
-    if (!guildConfiguration?.atmChannelIds.actions) {
-      return interaction.editReply(`Tento příkaz zatím není nastaven.`)
-    }
-
-    if (guildConfiguration?.atmChannelIds.actions !== interaction.channelId) {
       return interaction.editReply(
-        `Tento příkaz můžeš použít pouze v kanálu <#${guildConfiguration.atmChannelIds.actions}>`
+        'Není nastaven logovací kanál pro ATM. Nastav ho pomocí `/setup-atm`.'
       )
+    }
+
+    const user = interaction.options.getUser('user', true)
+
+    const registeredUser = await checkUserRegistration(user.id)
+
+    if (registeredUser) {
+      return interaction.editReply('Uživatel je již zaregistrován.')
     }
 
     const logChannel = client.channels.cache.get(
       guildConfiguration.atmChannelIds.logs
     ) as TextChannel
 
-    const member = interaction.member as GuildMember | null
-    const displayName =
-      member?.displayName ||
-      interaction.user.globalName ||
-      interaction.user.username
-
     logChannel
       .send({
         embeds: [
           new EmbedBuilder()
             .setTitle(
-              `Registrace uživatele ${displayName} (${interaction.user.username})`
+              `Manažer ${interaction.user.username} zaregistroval uživatele ${user.username}`
             )
-            .setColor('White'),
+            .setColor('Grey'),
         ],
       })
       .catch(console.error)
 
     const newUser = new User({
-      userId: interaction.user.id,
+      userId: user.id,
     })
 
     await newUser.save()
 
-    return interaction.editReply('Byl jsi úspěšně zaregistrován.')
+    return interaction.editReply('Uživatel byl úspěšně zaregistrován.')
   } catch (error) {
     console.error('Error running the command:', error)
     return interaction.reply({

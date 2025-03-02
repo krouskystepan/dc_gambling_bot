@@ -1,12 +1,13 @@
 import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
 import { ApplicationCommandOptionType, MessageFlags } from 'discord.js'
+import { SLOT_MULTIPLIERS, SYMBOL_WEIGHTS } from '../../utils/casinoConfig'
 import { createBetEmbed } from '../../utils/createEmbed'
+import { spinSlot, calculateRTP } from '../../utils/slotsHelpers'
 import {
-  formatNumberToReadableString,
   parseReadableStringToNumber,
+  formatNumberToReadableString,
+  formatNumberWithSpaces,
 } from '../../utils/utils'
-import { SLOT_MULTIPLIERS, SYMBOL_WEIGHTS } from '../../utils/multipliers'
-import { calculateRTP, spinSlot } from '../../utils/slotsHelpers'
 
 export const data: CommandData = {
   name: 'simulate-slots',
@@ -83,9 +84,13 @@ export async function run({ interaction }: SlashCommandProps) {
       interaction.options.getString('spins', true)
     )
 
-    if (spins > 10_000_000) {
-      return await interaction.editReply({
-        content: 'Maximální počet spinů je 10M.',
+    const MAX_SPINS = 50_000_000
+
+    if (spins > MAX_SPINS) {
+      return interaction.editReply({
+        content: `Maximální počet spinů je ${formatNumberToReadableString(
+          MAX_SPINS
+        )}.`,
       })
     }
 
@@ -99,8 +104,17 @@ export async function run({ interaction }: SlashCommandProps) {
     const multipliers = interaction.options.getBoolean('multipliers')
     const weights = interaction.options.getBoolean('weights')
 
+    await interaction.editReply(
+      `Simuluji **${formatNumberToReadableString(
+        spins
+      )}** spinů se sázkou **$${formatNumberToReadableString(
+        bet
+      )}**. Čekej prosím...`
+    )
+
     const startTime = performance.now()
-    for (let i = 0; i < spins; i++) {
+
+    for (let i = 1; i <= spins; i++) {
       totalBet += bet
       const resultString = spinSlot()
       let winnings = 0
@@ -129,11 +143,15 @@ export async function run({ interaction }: SlashCommandProps) {
     }
     const endTime = performance.now()
 
+    await interaction.editReply(`Simulace dokončena. Generuji výsledky...`)
+
     const profitOrLoss = totalWinnings - totalBet
     const profitOrLossPercentage = (profitOrLoss / totalBet) * 100
     const rtp = calculateRTP(spins)
 
-    const winLossesDetails = `🎉 Výhry: **${wins}**\n❌ Prohry: **${losses}**`
+    const winLossesDetails =
+      `🎉 Výhry: **${formatNumberWithSpaces(wins)}**\n` +
+      `❌ Prohry: **${formatNumberWithSpaces(losses)}**`
 
     const winLossesSeriesDetails =
       `🔥 Nejdelší výherní série: **${biggestWinningStreak}**\n` +
@@ -141,7 +159,9 @@ export async function run({ interaction }: SlashCommandProps) {
 
     const winDetails = Object.entries(winCounts)
       .sort((a, b) => b[1] - a[1])
-      .map(([symbol, count]) => `${symbol}: **${count}**x`)
+      .map(
+        ([symbol, count]) => `${symbol}: **${formatNumberWithSpaces(count)}**x`
+      )
       .join('\n')
 
     const multipliersDetails = Object.entries(SLOT_MULTIPLIERS)
@@ -171,6 +191,7 @@ export async function run({ interaction }: SlashCommandProps) {
     )
 
     await interaction.editReply({
+      content: `Simulace dokončena.`,
       embeds: [embed],
     })
   } catch (error) {

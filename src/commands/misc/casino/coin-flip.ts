@@ -4,7 +4,7 @@ import { createBetEmbed } from '../../../utils/createEmbed'
 import {
   COINFLIP_MAX_BET,
   COINFLIP_WIN_MULTIPLIER,
-} from '../../../utils/multipliers'
+} from '../../../utils/casinoConfig'
 import {
   checkChannelConfiguration,
   parseReadableStringToNumber,
@@ -18,7 +18,7 @@ export const data: CommandData = {
   options: [
     {
       name: 'bet',
-      description: 'Vlož sázku (předvolenou nebo např. 2k, 4.5k).',
+      description: 'Vlož sázku (např. 2k, 4.5k).',
       type: ApplicationCommandOptionType.String,
       required: true,
     },
@@ -111,19 +111,6 @@ export async function run({ interaction }: SlashCommandProps) {
             `Maximální sázka je $${formatNumberToReadableString(
               COINFLIP_MAX_BET
             )}.`
-          ),
-        ],
-        flags: MessageFlags.Ephemeral,
-      })
-    }
-
-    if (!user) {
-      return interaction.reply({
-        embeds: [
-          createBetEmbed(
-            '❌ Uživatel nenalezen',
-            'Red',
-            'Uživatel nebyl nalezen.'
           ),
         ],
         flags: MessageFlags.Ephemeral,

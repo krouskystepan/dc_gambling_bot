@@ -8,7 +8,7 @@ import {
   formatNumberToReadableString,
   checkUserRegistration,
 } from '../../../utils/utils'
-import { SLOT_MAX_BET } from '../../../utils/multipliers'
+import { SLOT_MAX_BET } from '../../../utils/casinoConfig'
 
 export const data: CommandData = {
   name: 'slots',
@@ -16,7 +16,7 @@ export const data: CommandData = {
   options: [
     {
       name: 'bet',
-      description: 'Vlož sázku (předvolenou nebo např. 2k, 4.5k).',
+      description: 'Vlož sázku (např. 2k, 4.5k).',
       type: ApplicationCommandOptionType.String,
       required: true,
     },
@@ -152,7 +152,7 @@ export async function run({ interaction }: SlashCommandProps) {
         `**${resultString}** | ${isWin ? '🎉' : '❌'} | ${
           isWin
             ? `**+$${formatNumberToReadableString(winnings)}**`
-            : `**-$${betAmount}**`
+            : `**-$${formatNumberToReadableString(parsedBetAmount)}**`
         }`
       )
 

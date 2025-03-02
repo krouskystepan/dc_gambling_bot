@@ -1,7 +1,7 @@
 import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
 import { ApplicationCommandOptionType, MessageFlags } from 'discord.js'
 import { createBetEmbed } from '../../../utils/createEmbed'
-import { DICE_MAX_BET, DICE_WIN_MULTIPLIER } from '../../../utils/multipliers'
+import { DICE_MAX_BET, DICE_WIN_MULTIPLIER } from '../../../utils/casinoConfig'
 import {
   checkChannelConfiguration,
   parseReadableStringToNumber,
@@ -11,11 +11,11 @@ import {
 
 export const data: CommandData = {
   name: 'dice',
-  description: 'Zahraj si kostku se 6 stranami.',
+  description: 'Zahraj si kostku!',
   options: [
     {
       name: 'bet',
-      description: 'Vlož sázku (předvolenou nebo např. 2k, 4.5k).',
+      description: 'Vlož sázku (např. 2k, 4.5k).',
       type: ApplicationCommandOptionType.String,
       required: true,
     },
@@ -119,19 +119,6 @@ export async function run({ interaction }: SlashCommandProps) {
             '❌ Neplatná strana',
             'Red',
             'Strana kostky musí být mezi 1 a 6.'
-          ),
-        ],
-        flags: MessageFlags.Ephemeral,
-      })
-    }
-
-    if (!user) {
-      return interaction.reply({
-        embeds: [
-          createBetEmbed(
-            '❌ Uživatel nenalezen',
-            'Red',
-            'Uživatel nebyl nalezen.'
           ),
         ],
         flags: MessageFlags.Ephemeral,
